@@ -31,7 +31,8 @@ router.get('/dogs',async(req, res)=>{
 }
 })
 
-router.get('/dogs/:idRaza', async(req, res)=>{ //Obtiene detalle de una raza especifica pedida por ID
+//Obtiene detalle de una raza especifica pedida por ID
+router.get('/dogs/:idRaza', async(req, res)=>{ 
    try{
     const id = req.params.idRaza;
         const dog = await Dog.findByPk(id)
@@ -42,7 +43,7 @@ router.get('/dogs/:idRaza', async(req, res)=>{ //Obtiene detalle de una raza esp
    }    
 })
 
-
+// Crea un nuevo perro en la base de datos
 router.post('/dogs', async(req, res)=>{
     const {name, image, altura, peso, anos_Vida} = req.body;
     if(!name || !image || !altura || !peso || !anos_Vida){
@@ -56,6 +57,7 @@ router.post('/dogs', async(req, res)=>{
     }
 })
 
+//Obtiene todos los temperamentos de la base de datos
 router.get('/temperaments', async(req, res)=>{
     try{
         var listTemps;
