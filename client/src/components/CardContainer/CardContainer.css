@@ -1,0 +1,8 @@
+.cards_container{
+    border: 2px solid rgba(0, 0, 255, 0.137); 
+    display: flex;
+    flex-wrap: wrap; 
+    padding: 1%;
+    background-image: url('Dog\ Back.jpg');
+ }
+ 

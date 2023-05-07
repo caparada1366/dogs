@@ -2,15 +2,15 @@ import { useState } from "react";
 
 
 export default function SearchBar({onSearch}) {
-   const [id, setId] = useState("");
+   const [raza, setRaza] = useState("");
 
    function handleChange(event){
-      setId(event.target.value);
+      setRaza(event.target.value);
    }
     return (
        <div>
-          <input onChange={handleChange} type='search' name='search' value={id}/>
-          <button onClick={()=>onSearch(id)}>Agregar</button>
+          <input onChange={handleChange} type='search' name='search' value={raza}/>
+          <button onClick={()=>onSearch(raza)}>Agregar</button>
        </div>
     );
  }

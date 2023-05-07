@@ -1,7 +1,21 @@
 import React from 'react'
+import Card from '../Card/Card'
+import './CardContainer.css'
 
-export default function CardContainer() {
+export default function CardContainer({dogs, onClose}) {
   return (
-    <div>Este sería el Home</div>
+    <div className='cards_container'>
+      {
+        dogs && dogs.map((dog)=>{
+          return <Card key={dog.id}
+          img ={dog.image}
+          name ={dog.name}
+          temperaments = {dog.temperament}
+          weight = {dog.peso}
+          onClose={onClose}>
+          </Card>
+        })
+      }
+    </div>
   )
 }
