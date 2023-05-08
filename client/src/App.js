@@ -14,7 +14,21 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const[dogs, setDogs] = useState([]);
+  function initialDogsState(){
+    var firstDogs =[];
+    
+      axios.get(`http://localhost:3001/dogs`).then(({data})=>{
+        if(data){
+          for(let i=1; i<11; i++){
+          firstDogs.push(data[i])
+          }
+        }
+      })
+    
+    return firstDogs;
+  }
+
+  const[dogs, setDogs] = useState(initialDogsState());
 
 
 //función para buscar la raza 
@@ -50,7 +64,7 @@ function App() {
 
      {location.pathname === '/' ? <LandingP onClick ={onClick}></LandingP>  : <NavBar onSearch ={onSearch}></NavBar>}
       <Routes>
-        <Route path="/home" element={<CardContainer dogs ={dogs} onClose={onClose}/>}></Route>
+        <Route path="/home" element={<CardContainer onClose={onClose}/>}></Route>
         <Route path="/form" element={<Form/>}></Route>
         <Route path="/detail" element={<Detail/>}></Route>
       </Routes>

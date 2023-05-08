@@ -1,8 +1,9 @@
 import React from 'react'
+import './Card.css'
 
 export default function Card({img, name, temperaments, weight, onClose}) {
   return (
-    <div>Card
+    <div className='card'>
         <button style={{cursor: 'pointer'}} onClick={()=>onClose(name)}>X</button>
         <h2>Raza: {name}</h2>
         <h3>Temperamento: {temperaments}</h3>
