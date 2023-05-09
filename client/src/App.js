@@ -7,53 +7,32 @@ import Form from './components/Form/Form'
 import CardContainer from './components/CardContainer/CardContainer';
 import { useState } from 'react';
 import axios from 'axios'
+import { useDispatch, useSelector } from 'react-redux';
+import { searchDog, todos } from './Redux/actions';
 
 
 function App() {
 
   const location = useLocation();
   const navigate = useNavigate();
-
-  function initialDogsState(){
-    var firstDogs =[];
-    
-      axios.get(`http://localhost:3001/dogs`).then(({data})=>{
-        if(data){
-          for(let i=1; i<11; i++){
-          firstDogs.push(data[i])
-          }
-        }
-      })
-    
-    return firstDogs;
-  }
-
-  const[dogs, setDogs] = useState(initialDogsState());
+  const {dogs} = useSelector((state)=>state)
+  const dispatch = useDispatch()
 
 
 //función para buscar la raza 
   function onSearch(raza){
-    axios.get(`http://localhost:3001/dogs?name=${raza}`).then(({data})=>{
-      console.log(data)
-      if(data) {
-        let existe = dogs.find((dog)=>dog.name === data.name);
-        if(existe){
-          alert('Esta raza ya existe')
-        }else{
-          setDogs((dogs)=>[...dogs, data]);
-          
-        }
-      } 
-    }).catch(err =>{
-      window.alert(`No se encontró raza con el nombre ${raza}`)
-    });
+   dispatch(searchDog(raza))
+  }
+
+  function onTodos(){
+    dispatch(todos())
   }
   //Funcion para borrar una carta del contenedor de cartas 
-  function onClose(name){
-    setDogs((oldDogs)=>{
-      return oldDogs.filter((dg)=>dg.name !==name)
-    })
-  }
+  // function onClose(name){
+  //   setDogs((oldDogs)=>{
+  //     return oldDogs.filter((dg)=>dg.name !==name)
+  //   })
+  // }
 
   // Funcion que nos lleva al Home desde el landing page 
   function onClick(){
@@ -62,11 +41,11 @@ function App() {
   return (
     <div className="App">
 
-     {location.pathname === '/' ? <LandingP onClick ={onClick}></LandingP>  : <NavBar onSearch ={onSearch}></NavBar>}
+     {location.pathname === '/' ? <LandingP onClick ={onClick}></LandingP> : <NavBar onSearch ={onSearch} onTodos={onTodos}></NavBar>}
       <Routes>
-        <Route path="/home" element={<CardContainer onClose={onClose}/>}></Route>
+        <Route path="/home" element={<CardContainer/>}></Route>
         <Route path="/form" element={<Form/>}></Route>
-        <Route path="/detail" element={<Detail/>}></Route>
+        <Route path="/detail/:name" element={<Detail/>}></Route>
       </Routes>
     </div>
   );

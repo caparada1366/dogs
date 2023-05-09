@@ -1,0 +1,27 @@
+.form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+.minMax{
+    display: flex;
+    flex-direction: wrap;
+    flex-basis: calc(20% - 50px);
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+.cuadro-checkbox{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-left: 20%;
+    margin-right: 20%;
+}
+.cuadro-checkbox label {
+    font-size: x-small;
+    flex-basis: calc(5% - 2px);
+    margin-bottom: 10px;
+    
+  }

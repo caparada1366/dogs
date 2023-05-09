@@ -47,16 +47,16 @@ export function nextPage(){
     }
 }
 
-export function searchDog(){
+export function searchDog(name){
     return {
-        type: 'SEARCH_DOG'
+        type: 'SEARCH_DOG',
+        payload: name
     }
 }
 
-export function removeDog(name){
+export function todos(){
     return {
-        type: 'REMOVE_DOG',
-        payload: name
+        type: 'TODOS',
     }
 }
 
@@ -71,11 +71,13 @@ export function getAllDogs(){
     }
 }
 
-    
-export function getPerros(){
-    return function(dispatch){
-      return axios.get(`http://localhost:3001/dogs`).then(({data})=>{
-        dispatch(getAllDogs(data))
-      }).catch(err => err.message)
+export function getAllTemps(){
+    return (dispatch)=>{
+        axios.get(`http://localhost:3001/temperaments`).then(({data})=>{      
+            dispatch({
+                type: 'GET_ALL_TEMPS',
+                payload: data    
+            })
+        })    
     }
-  }
+}

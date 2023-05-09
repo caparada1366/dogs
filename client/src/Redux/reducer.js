@@ -1,10 +1,12 @@
-import axios from 'axios'
+
 
 
 const initialState = {
+    temps: [],
     dogs: [],
     paginaActual: 1,
-   
+    dogsAux: [],  
+     
 }
 
 
@@ -21,71 +23,103 @@ export default function rootReducer(state = initialState, {type, payload}){
                 paginaActual: state.paginaActual +1,
             };
         case 'FILTER_TEMP':
-            const filtered =[];
-            state.dogs.forEach((dog)=>{
-                var temps = dog.temperament.split(',')
-                if(temps.includes(payload)) filtered.push(dog);
-            })
+            var filterTemp = state.dogsAux
+
+            filterTemp = filterTemp.filter((dog)=>dog.temperament?.split(',').includes(payload))
+            if(payload === 'default') filterTemp = state.dogsAux;
+
             return {
                 ...state,
-                dogs: filtered
+                dogs: filterTemp,
+                paginaActual: 1
             };
         case 'FILTER_ORIGIN':
-            const filtered2 = [];
-            state.dogs.forEach((dog)=>{
+            var filtered2 = state.dogsAux;
+
                 if(payload === 'API'){
-                    if(isNaN(dog.id))filtered2.push(dog)
+                    filtered2 = filtered2.filter((dog)=> !isNaN(dog.id))
                 }
-                else if(payload === 'BD'){
-                    if(!isNaN(dog.id))filtered2.push(dog)
+                if(payload === 'BD'){
+                    filtered2 = filtered2.filter((dog)=> isNaN(dog.id))
                 }
-            })
+                 if(payload === 'default') filtered2 = state.dogsAux;
+           
             return {
                 ...state,
-                dogs: filtered
+                dogs: filtered2,
+                paginaActual: 1  
             };
         case 'SORT_BY_NAME':
-            const ordenados =[];
-            if(payload = 'AZ'){
-                ordenados = state.dogs.sort((a, b)=> a.name.localCompare(b.nombre))
-            }else if(payload = 'ZA') ordenados = state.dogs.sort((a,b) => b.name.localCompare(a.name))
-            
+            var ordenados =state.dogs;
+            if(payload === 'AZ'&& state.dogs){
+                ordenados = state.dogs.sort((a, b)=> {
+                    if(a.name < b.name) return -1
+                    if(a.name > b.name) return 1
+                    return 0
+                })
+            }
+            if(payload === 'ZA' && state.dogs){
+                ordenados = state.dogs.sort((a, b)=> {
+                    if(a.name < b.name) return 1
+                    if(a.name > b.name) return -1
+                    return 0
+                })
+            }
+            if(payload === 'default') ordenados = state.dogsAux;
             return {
                 ...state,
-                dogs: ordenados
+                dogs: ordenados,
+                paginaActual: 1  
             };
         case 'SORT_BY_WEIGHT':
-            const ordenadosPeso = []
-            if(payload = 'Ascendente'){
+            var ordenadosPeso = state.dogs
+            if(payload === 'Ascendente'){
                 ordenadosPeso = state.dogs.sort((a, b)=> a.peso.split(' - ')[1] - b.peso.split(' - ')[1])
             }
-            else if (payload = 'Descendente'){
+            if (payload === 'Descendente'){
                 ordenadosPeso = state.dogs.sort((a, b)=> b.peso.split(' - ')[1] - a.peso.split(' - ')[1])
             }
+            if(payload === 'default') ordenadosPeso = state.dogsAux;
             return{
                 ...state,
-                dogs: ordenadosPeso     
+                dogs: ordenadosPeso,
+                paginaActual: 1     
             };
         case 'SEARCH_DOG':
+            var search = state.dogs;
+                search = search.filter((dog)=> dog.name.toLowerCase() === payload.toLowerCase())
+                if(search.length ===0) {
+                    alert('Raza inexistente')
+                    search = state.dogsAux
+                }
             return{
-
+                ...state,
+                dogs: search
             };
+        case 'TODOS':
+           
+            return{
+                ...state,
+                dogs: state.dogsAux,
+                paginaActual: 1  
+            }
         case 'ADD_DOG':
+
             return {
 
             };
-        case 'REMOVE_DOG':
-            const nuevoDogs=[];
-            //nuevoDogs = state.dogs.filter((dog)=>{!(dog.name === payload)})
-            return{
+        case 'GET_ALL_TEMPS':
+            return {
                 ...state,
-                dogs: nuevoDogs
-            }
+                temps: payload,
+                }    
         case 'GET_ALL_DOGS':
             return {
                 ...state,
-                dogs: payload
+                dogs: payload,
+                dogsAux: payload,
             }
+       
         default:
             return state;
     }
