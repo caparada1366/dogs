@@ -6,8 +6,21 @@ async function getDogs(req, res){
     const {name} = req.query;
     if(name){                                                     //Hacemos la busqueda si recibimos nombre por query
         try{  
-        const listDogs = await Dog.findAll({where: {name: name}});  //Buscamos en la DB
-        if(listDogs.length < 0) return res.status(200).json(listDogs);
+        const listDogs = await Dog.findAll({
+            where: {name: name},
+            include: {
+                model: Temperaments,
+                attributes: ['name'],
+                through: {
+                  attributes: [],
+                }
+              }});  //Buscamos en la DB
+               var dogsBD =[]    
+        listDogs.forEach((dog)=>{
+            const {id, name, image, altura, peso, anos_Vida, temperaments} = dog
+            dogsBD.push({id, name, image, altura, peso, anos_Vida, temperament: temperaments.map(t=> t.name).join(',')})
+        }) 
+        if(dogsBD.length > 0) return res.status(200).json(dogsBD[0]);
         else{
             axios.get(`https://api.thedogapi.com/v1/breeds?api_key=${API_KEY}`) //Buscamos en la API
             .then(response=> {
@@ -36,9 +49,23 @@ async function getDogs(req, res){
         }
     }
     else {                              //Aqui se ejecuta la busqueda de todas las razas porque no se recibe query
-    try{     
+    try{                                    //Traemos los de la DB  
         var listDogs;
-        listDogs = await Dog.findAll();     //Traemos los de la DB  
+        listDogs = await Dog.findAll({
+            include: {
+                model: Temperaments,
+                attributes: ['name'],
+                through: {
+                    attributes: [],
+                }
+            }
+        });
+        var dogsBD =[]    
+        listDogs.forEach((dog)=>{
+            const {id, name, image, altura, peso, anos_Vida, temperaments} = dog
+            dogsBD.push({id, name, image, altura, peso, anos_Vida, temperament: temperaments.map(t=> t.name).join(',')})
+        }) 
+        
     }catch(err){
         return res.status(404).send(err.message)
     }
@@ -59,7 +86,7 @@ async function getDogs(req, res){
             dogs.push(perro);
         })
 
-        res.status(200).json(dogs.concat(listDogs))
+        res.status(200).json(dogs.concat(dogsBD))
     }).catch(err => {
         res.status(404).send(err.message)
     })
@@ -107,27 +134,33 @@ async function getDogById(req,res){
  
  }
 
- async function getDogByName(req,res){
-    const name = req.query.name;
-    try{    
-        if(name){
-            const name = req.query.name;
-            const listDogs = await Dog.findAll({where: {name: name}});
-            if(listDogs.length === 0) return res.status(404).send(`el nombre ${name} no fue encontrado`)
-            return res.status(200).json(listDogs);
-        }
-    }   catch(err){
-        return res.status(404).send(err.message)
-        }
- }
+//  async function getDogByName(req,res){
+//     const name = req.query.name;
+//     try{    
+//         if(name){
+            
+//             const listDogs = await Dog.findAll({where: {name: name}});
+//             if(listDogs.length === 0) return res.status(404).send(`el nombre ${name} no fue encontrado`)
+//             return res.status(200).json(listDogs);
+//         }
+//     }   catch(err){
+//         return res.status(404).send(err.message)
+//         }
+//  }
 
  async function createDog(req, res){
-    const {name, image, altura, peso, anos_Vida} = req.body;
+    const {name, image, altura, peso, anos_Vida, temperaments} = req.body; //agregamos temperaments aqui 
     if(!name || !image || !altura || !peso || !anos_Vida){
         return res.status(404).send('Faltan datos obligatorios')
     }
     try{
         const newDog = await Dog.create({name, image, altura, peso, anos_Vida});
+        if(temperaments){
+            temperaments.forEach(async(t)=>{
+                let temp = await Temperaments.findAll({where: {name: t}})
+                await newDog.addTemperaments(temp)
+            })
+        }                                                           
         return res.status(201).json(newDog);
     }catch(err){
         return res.status(404).send('Error en alguno de los datos')
@@ -135,29 +168,34 @@ async function getDogById(req,res){
  }
 
  async function getTemperaments(req, res){
+   
+    try{
     var temps = [];
-    fetch(`https://api.thedogapi.com/v1/breeds?api_key=${API_KEY}`)
-    .then(response=> response.json())
-    .then(data =>
-    {
+    const respuesta = await fetch(`https://api.thedogapi.com/v1/breeds?api_key=${API_KEY}`)
+    const data = await respuesta.json();
         data.forEach(breed => {
             if(breed.temperament){
                 var auxTemps = breed.temperament.split(",")
                 for(let i=0; i<auxTemps.length; i++){
                     if(!temps.includes(auxTemps[i]))temps.push(auxTemps[i]) //se verifica que no se repita
+                }
             }
-        }
         });
        
-        temps.forEach(async t =>{
-            await Temperaments.create({name: t})
-        })    
-    }).catch(error=> console.log(error))
-    try{
-        var listTemps;
-        listTemps = await Temperaments.findAll();
-        return res.status(200).json(listTemps);
-    }catch(err){
+        temps = temps.map(t =>{return{name: t}})
+
+        const listTemps = await Temperaments.findAll();
+
+        if(listTemps.length === 0){
+            await Temperaments.bulkCreate(temps)
+        }
+
+        const allTemps = await Temperaments.findAll();
+        
+       
+        return res.status(200).json(allTemps);
+    }
+    catch(err){
         return res.status(404).send(err.message)
     }     
  }
@@ -166,7 +204,6 @@ async function getDogById(req,res){
 module.exports ={
     getDogs,
     getDogById,
-    getDogByName,
     createDog,
     getTemperaments
 }
